@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BLR Site Value — House Price Estimator</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root{
+  --ink:#0E1B2E;
+  --ink-2:#132537;
+  --ink-3:#0A1522;
+  --grid-line: rgba(150,185,214,0.14);
+  --grid-line-strong: rgba(150,185,214,0.28);
+  --paper:#F1E9D8;
+  --paper-2:#E8DEC8;
+  --brass:#C89B3C;
+  --brass-light:#E0BA63;
+  --teal:#57A399;
+  --teal-dim: rgba(87,163,153,0.35);
+  --text-light:#E9EFF4;
+  --text-dim: #9FB3C4;
+  --text-ink:#26303B;
+  --text-ink-dim:#5C6A76;
+  --danger:#C1633D;
+  --radius-sheet: 3px;
+}
+
+*{box-sizing:border-box;}
+html{-webkit-font-smoothing:antialiased;}
+body{
+  margin:0;
+  background:var(--ink);
+  color:var(--text-light);
+  font-family:'Inter',sans-serif;
+  line-height:1.5;
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:0.01ms !important; transition-duration:0.01ms !important;}
+}
+
+.blueprint-bg{
+  background-image:
+    repeating-linear-gradient(0deg, var(--grid-line) 0, var(--grid-line) 1px, transparent 1px, transparent 32px),
+    repeating-linear-gradient(90deg, var(--grid-line) 0, var(--grid-line) 1px, transparent 1px, transparent 32px),
+    repeating-linear-gradient(0deg, var(--grid-line-strong) 0, var(--grid-line-strong) 1px, transparent 1px, transparent 160px),
+    repeating-linear-gradient(90deg, var(--grid-line-strong) 0, var(--grid-line-strong) 1px, transparent 1px, transparent 160px);
+}
+
+/* ---------- Header ---------- */
+header{
+  padding:64px 6vw 56px;
+  position:relative;
+  border-bottom:1px solid var(--grid-line-strong);
+}
+.kicker{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12px;
+  letter-spacing:0.06em;
+  color:var(--teal);
+  margin:0 0 18px;
+}
+.kicker span{color:var(--text-dim);}
+h1{
+  font-family:'Fraunces',serif;
+  font-weight:600;
+  font-size:clamp(36px,5.2vw,64px);
+  line-height:1.02;
+  margin:0 0 20px;
+  max-width:14ch;
+  color:var(--text-light);
+}
+h1 em{
+  font-style:italic;
+  font-weight:400;
+  color:var(--brass-light);
+}
+.header-sub{
+  max-width:52ch;
+  color:var(--text-dim);
+  font-size:16.5px;
+}
+.header-meta{
+  margin-top:34px;
+  display:flex;
+  gap:36px;
+  flex-wrap:wrap;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12.5px;
+  color:var(--text-dim);
+}
+.header-meta strong{
+  display:block;
+  color:var(--text-light);
+  font-size:14px;
+  margin-top:4px;
+}
+
+/* ---------- Layout ---------- */
+main{padding:0 6vw 40px;}
+.hero{
+  display:grid;
+  grid-template-columns: minmax(0,1fr) minmax(0,1.15fr);
+  gap:28px;
+  margin-top:44px;
+  align-items:start;
+}
+@media (max-width: 900px){
+  .hero{grid-template-columns:1fr;}
+}
+
+.panel{
+  background:var(--ink-2);
+  border:1px dashed var(--grid-line-strong);
+  border-radius:var(--radius-sheet);
+  padding:30px 30px 34px;
+}
+.panel-label{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  color:var(--teal);
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:22px;
+}
+.panel-label::after{
+  content:"";
+  flex:1;
+  height:1px;
+  background:var(--grid-line-strong);
+}
+
+/* ---------- Form ---------- */
+.field{margin-bottom:26px;}
+.field label{
+  display:block;
+  font-size:13.5px;
+  color:var(--text-dim);
+  margin-bottom:10px;
+}
+.field label b{color:var(--text-light); font-weight:500;}
+
+.bhk-row{display:flex; gap:8px;}
+.bhk-btn{
+  flex:1;
+  padding:12px 0;
+  background:transparent;
+  border:1px solid var(--grid-line-strong);
+  color:var(--text-dim);
+  font-family:'IBM Plex Mono',monospace;
+  font-size:14px;
+  border-radius:2px;
+  cursor:pointer;
+  transition: border-color .15s, color .15s, background .15s;
+}
+.bhk-btn:hover{border-color:var(--teal); color:var(--text-light);}
+.bhk-btn.active{
+  background:var(--brass);
+  border-color:var(--brass);
+  color:var(--ink-3);
+  font-weight:600;
+}
+.bhk-btn:focus-visible, select:focus-visible, input:focus-visible{
+  outline:2px solid var(--brass-light);
+  outline-offset:2px;
+}
+
+.area-row{display:flex; align-items:center; gap:16px;}
+input[type="range"]{
+  flex:1;
+  accent-color:var(--brass);
+  height:4px;
+}
+.area-number{
+  width:100px;
+  background:var(--ink-3);
+  border:1px solid var(--grid-line-strong);
+  color:var(--text-light);
+  font-family:'IBM Plex Mono',monospace;
+  font-size:15px;
+  padding:10px 10px;
+  border-radius:2px;
+  text-align:right;
+}
+.area-scale{
+  display:flex; justify-content:space-between;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px; color:var(--text-dim);
+  margin-top:8px;
+}
+
+select{
+  width:100%;
+  background:var(--ink-3);
+  border:1px solid var(--grid-line-strong);
+  color:var(--text-light);
+  font-family:'Inter',sans-serif;
+  font-size:15px;
+  padding:12px 12px;
+  border-radius:2px;
+}
+select:hover{border-color:var(--teal);}
+
+.locality-tag{
+  margin-top:10px;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12px;
+  color:var(--text-dim);
+}
+.locality-tag b{color:var(--brass-light);}
+
+/* ---------- Result / certificate ---------- */
+.result-wrap{
+  display:flex;
+  flex-direction:column;
+  gap:22px;
+}
+.floorplan-card{
+  background:var(--ink-2);
+  border:1px dashed var(--grid-line-strong);
+  border-radius:var(--radius-sheet);
+  padding:26px 26px 18px;
+}
+.floorplan-card svg{width:100%; height:auto; display:block;}
+.floorplan-caption{
+  display:flex; justify-content:space-between;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  color:var(--text-dim);
+  margin-top:14px;
+  padding-top:14px;
+  border-top:1px solid var(--grid-line);
+}
+
+.certificate{
+  background:var(--paper);
+  color:var(--text-ink);
+  border-radius:2px;
+  padding:32px 34px 28px;
+  position:relative;
+  box-shadow: 0 18px 40px -22px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,0,0,0.04);
+}
+.certificate::before{
+  content:"";
+  position:absolute; inset:8px;
+  border:1px solid rgba(38,48,59,0.18);
+  pointer-events:none;
+}
+.cert-top{
+  display:flex; justify-content:space-between; align-items:flex-start;
+  font-family:'IBM Plex Mono',monospace; font-size:11px;
+  color:var(--text-ink-dim); letter-spacing:0.03em;
+}
+.cert-stamp{
+  border:2px solid var(--danger);
+  color:var(--danger);
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10.5px;
+  letter-spacing:0.08em;
+  padding:5px 9px;
+  transform:rotate(4deg);
+  border-radius:3px;
+  white-space:nowrap;
+}
+.cert-value{
+  font-family:'Fraunces',serif;
+  font-weight:600;
+  font-size:clamp(34px,4vw,50px);
+  margin:18px 0 4px;
+  line-height:1;
+}
+.cert-range{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:13px;
+  color:var(--text-ink-dim);
+  margin-bottom:22px;
+}
+.cert-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:0;
+  border-top:1px solid rgba(38,48,59,0.18);
+  padding-top:16px;
+}
+.cert-grid div{padding-right:10px;}
+.cert-grid .k{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10.5px;
+  text-transform:uppercase;
+  letter-spacing:0.05em;
+  color:var(--text-ink-dim);
+  margin-bottom:6px;
+}
+.cert-grid .v{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:16px;
+  font-weight:600;
+}
+
+/* ---------- Comparison ---------- */
+.section-heading{
+  display:flex; align-items:baseline; gap:16px;
+  margin:70px 0 26px;
+}
+.section-heading h2{
+  font-family:'Fraunces',serif;
+  font-weight:600;
+  font-size:28px;
+  margin:0;
+}
+.section-heading p{
+  margin:0; color:var(--text-dim); font-size:14px;
+}
+
+.chart-panel{
+  padding:30px 30px 20px;
+}
+.bars{
+  display:flex;
+  align-items:flex-end;
+  gap:10px;
+  height:220px;
+  border-bottom:1px solid var(--grid-line-strong);
+  padding-bottom:0;
+}
+.bar-col{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-end;
+  height:100%;
+  min-width:0;
+}
+.bar-val{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10.5px;
+  color:var(--text-dim);
+  margin-bottom:6px;
+  white-space:nowrap;
+}
+.bar{
+  width:60%;
+  background:var(--teal-dim);
+  border-top:2px solid var(--teal);
+  border-radius:2px 2px 0 0;
+  transition: height .35s ease, background .2s, border-color .2s;
+}
+.bar-col.selected .bar{
+  background:rgba(200,155,60,0.35);
+  border-top:2px solid var(--brass);
+}
+.bar-col.selected .bar-val{color:var(--brass-light); font-weight:600;}
+.bar-labels{
+  display:flex; gap:10px; margin-top:10px;
+}
+.bar-label{
+  flex:1;
+  text-align:center;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10px;
+  color:var(--text-dim);
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.bar-col.selected + .bar-labels{}
+.bar-label.selected{color:var(--brass-light); font-weight:600;}
+
+/* ---------- Methodology ---------- */
+.method-grid{
+  display:grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap:28px;
+}
+@media (max-width:900px){.method-grid{grid-template-columns:1fr;}}
+
+.formula{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:13.5px;
+  color:var(--text-light);
+  background:var(--ink-3);
+  border:1px solid var(--grid-line);
+  border-radius:2px;
+  padding:16px 18px;
+  margin:0 0 18px;
+  overflow-x:auto;
+}
+.formula .op{color:var(--teal);}
+.formula .var{color:var(--brass-light);}
+
+.method-panel p{
+  color:var(--text-dim);
+  font-size:14.5px;
+  margin:0 0 14px;
+}
+
+.weight-row{margin-bottom:16px;}
+.weight-top{
+  display:flex; justify-content:space-between;
+  font-size:13px; color:var(--text-light);
+  margin-bottom:7px;
+}
+.weight-top span:last-child{
+  font-family:'IBM Plex Mono',monospace;
+  color:var(--text-dim);
+}
+.weight-track{
+  height:6px;
+  background:var(--ink-3);
+  border-radius:3px;
+  overflow:hidden;
+}
+.weight-fill{
+  height:100%;
+  background:var(--teal);
+  border-radius:3px;
+}
+
+/* ---------- Footer ---------- */
+footer{
+  padding:40px 6vw 60px;
+  border-top:1px solid var(--grid-line-strong);
+  margin-top:70px;
+}
+.disclaimer{
+  max-width:70ch;
+  font-size:13px;
+  color:var(--text-dim);
+  font-family:'IBM Plex Mono',monospace;
+  line-height:1.7;
+}
+.disclaimer b{color:var(--text-light);}
+</style>
+</head>
+<body>
+
+<header class="blueprint-bg">
+  <p class="kicker">BENGALURU RESIDENTIAL &nbsp;·&nbsp; <span>Sheet No. 04 / Valuation Estimate</span></p>
+  <h1>What's a Bengaluru<br><em>flat</em> actually worth?</h1>
+  <p class="header-sub">Set the configuration, built-up area and locality, and this reads back an estimated
+  market value drawn from indicative per-sq.ft. benchmarks across the city.</p>
+  <div class="header-meta">
+    <div>CITY<strong>Bengaluru, KA</strong></div>
+    <div>LOCALITIES MAPPED<strong>15</strong></div>
+    <div>CONFIGURATIONS<strong>1 – 5+ BHK</strong></div>
+    <div>UNIT<strong>₹ / sq.ft.</strong></div>
+  </div>
+</header>
+
+<main class="blueprint-bg">
+
+  <div class="hero">
+    <!-- INPUT PANEL -->
+    <div class="panel">
+      <p class="panel-label">01 — Enter criteria</p>
+
+      <div class="field">
+        <label><b>Configuration</b> — number of bedrooms</label>
+        <div class="bhk-row" id="bhkRow">
+          <button class="bhk-btn" data-bhk="1">1 BHK</button>
+          <button class="bhk-btn active" data-bhk="2">2 BHK</button>
+          <button class="bhk-btn" data-bhk="3">3 BHK</button>
+          <button class="bhk-btn" data-bhk="4">4 BHK</button>
+          <button class="bhk-btn" data-bhk="5">5+ BHK</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label><b>Built-up area</b> — in square feet</label>
+        <div class="area-row">
+          <input type="range" id="areaSlider" min="300" max="5000" step="10" value="1200">
+          <input type="number" id="areaNumber" class="area-number" min="300" max="5000" value="1200">
+        </div>
+        <div class="area-scale"><span>300 sq.ft.</span><span>5,000 sq.ft.</span></div>
+      </div>
+
+      <div class="field" style="margin-bottom:6px;">
+        <label><b>Locality</b> — where in the city</label>
+        <select id="localitySelect"></select>
+        <p class="locality-tag" id="localityTag"></p>
+      </div>
+    </div>
+
+    <!-- RESULT PANEL -->
+    <div class="result-wrap">
+      <div class="floorplan-card">
+        <p class="panel-label" style="margin-bottom:16px;">02 — Indicative floor plan</p>
+        <svg id="planSvg" viewBox="0 0 420 260"></svg>
+        <div class="floorplan-caption">
+          <span id="planDims">— × — ft</span>
+          <span id="planScale">NOT TO EXACT SCALE</span>
+        </div>
+      </div>
+
+      <div class="certificate">
+        <div class="cert-top">
+          <span>ESTIMATE No. <span id="certId">BLR-0000</span></span>
+          <span class="cert-stamp">ILLUSTRATIVE</span>
+        </div>
+        <div class="cert-value" id="certValue">₹ 0.00 L</div>
+        <div class="cert-range" id="certRange">Likely range: ₹0 L – ₹0 L</div>
+        <div class="cert-grid">
+          <div><div class="k">Rate applied</div><div class="v" id="certRate">₹0 /sq.ft</div></div>
+          <div><div class="k">Configuration</div><div class="v" id="certConfig">2 BHK</div></div>
+          <div><div class="k">Locality</div><div class="v" id="certLocality">—</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPARISON -->
+  <div class="section-heading">
+    <h2>Rate by locality</h2>
+    <p>Indicative price per sq.ft. across all 15 mapped localities</p>
+  </div>
+  <div class="panel chart-panel">
+    <div class="bars" id="bars"></div>
+    <div class="bar-labels" id="barLabels"></div>
+  </div>
+
+  <!-- METHODOLOGY -->
+  <div class="section-heading">
+    <h2>How the estimate is built</h2>
+    <p>A transparent, editable formula — not a black box</p>
+  </div>
+  <div class="method-grid">
+    <div class="panel method-panel">
+      <p class="panel-label">03 — Formula</p>
+      <div class="formula">
+        <span class="var">estimate</span> = <span class="var">area</span> ×
+        <span class="var">locality_rate</span> × <span class="var">bhk_factor</span>
+      </div>
+      <p>The <b style="color:var(--text-light)">locality rate</b> is an indicative per-sq.ft. benchmark for that
+      neighbourhood. The <b style="color:var(--text-light)">BHK factor</b> nudges the rate up slightly for larger
+      configurations, which tend to carry a small premium per sq.ft. in the same building. The final figure is
+      shown as a band (±8%) rather than a single number, since actual listings vary by floor, age, amenities and
+      exact street.</p>
+      <p>This mirrors, at a simple level, how a linear regression model would combine a categorical feature
+      (locality), a continuous feature (area) and an ordinal feature (BHK) into one predicted price.</p>
+    </div>
+    <div class="panel method-panel">
+      <p class="panel-label">Relative weight of each input</p>
+      <div class="weight-row">
+        <div class="weight-top"><span>Locality</span><span>55%</span></div>
+        <div class="weight-track"><div class="weight-fill" style="width:55%; background:var(--brass);"></div></div>
+      </div>
+      <div class="weight-row">
+        <div class="weight-top"><span>Built-up area</span><span>35%</span></div>
+        <div class="weight-track"><div class="weight-fill" style="width:35%;"></div></div>
+      </div>
+      <div class="weight-row">
+        <div class="weight-top"><span>BHK configuration</span><span>10%</span></div>
+        <div class="weight-track"><div class="weight-fill" style="width:10%;"></div></div>
+      </div>
+      <p style="margin-top:20px;">Locality dominates the estimate — the same flat can differ by more than 2×
+      in price simply by moving across the city. Area scales the value directly, while BHK mostly reflects
+      how that area is divided up.</p>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <p class="disclaimer"><b>Note on the data —</b> Locality rates are indicative, illustrative benchmarks for
+  demonstration purposes and do not reflect live listings or verified transaction data. Real prices vary by
+  floor, age, builder, amenities and exact micro-location. For an actual purchase or sale, cross-check current
+  rates on a property portal or with a local broker before relying on any figure shown here.</p>
+</footer>
+
+<script>
+// ---------- Data: indicative rates (₹ per sq.ft.) by locality ----------
+const LOCALITIES = [
+  { name: "Indiranagar",       zone: "Central", rate: 12500 },
+  { name: "Malleshwaram",      zone: "Central", rate: 11500 },
+  { name: "Koramangala",       zone: "Central", rate: 11200 },
+  { name: "Jayanagar",         zone: "Central", rate: 9800  },
+  { name: "Rajajinagar",       zone: "Central", rate: 9200  },
+  { name: "HSR Layout",        zone: "South",   rate: 9500  },
+  { name: "JP Nagar",          zone: "South",   rate: 8500  },
+  { name: "Bannerghatta Road", zone: "South",   rate: 6000  },
+  { name: "Electronic City",   zone: "South",   rate: 4800  },
+  { name: "Hebbal",            zone: "North",   rate: 8200  },
+  { name: "Yelahanka",         zone: "North",   rate: 5200  },
+  { name: "Bellandur",         zone: "East",    rate: 7500  },
+  { name: "Marathahalli",      zone: "East",    rate: 7200  },
+  { name: "Sarjapur Road",     zone: "East",    rate: 6800  },
+  { name: "Whitefield",        zone: "East",    rate: 6500  },
+];
+
+const state = { bhk: 2, area: 1200, locality: "HSR Layout" };
+
+// ---------- Populate locality dropdown, grouped by zone ----------
+const zones = ["Central","East","South","North"];
+const select = document.getElementById('localitySelect');
+zones.forEach(zone => {
+  const group = document.createElement('optgroup');
+  group.label = zone + " Bengaluru";
+  LOCALITIES.filter(l => l.zone === zone).forEach(l => {
+    const opt = document.createElement('option');
+    opt.value = l.name;
+    opt.textContent = l.name;
+    if (l.name === state.locality) opt.selected = true;
+    group.appendChild(opt);
+  });
+  select.appendChild(group);
+});
+
+// ---------- Helpers ----------
+function formatINR(n){
+  if (n >= 1e7) return "₹" + (n/1e7).toFixed(2) + " Cr";
+  return "₹" + (n/1e5).toFixed(2) + " L";
+}
+function commas(n){ return Math.round(n).toLocaleString('en-IN'); }
+
+function getLocality(name){ return LOCALITIES.find(l => l.name === name); }
+
+function predict(bhk, area, localityName){
+  const loc = getLocality(localityName);
+  const bhkFactor = 1 + (bhk - 2) * 0.025;
+  const ratePerSqft = Math.round(loc.rate * bhkFactor);
+  const estimate = ratePerSqft * area;
+  return {
+    ratePerSqft,
+    estimate,
+    low: estimate * 0.92,
+    high: estimate * 1.08
+  };
+}
+
+// ---------- Floor plan schematic ----------
+function drawFloorplan(bhk, area){
+  const svg = document.getElementById('planSvg');
+  const PAD = 46, W = 420, H = 260;
+  const plotW = W - PAD*2, plotH = H - PAD*1.6;
+
+  // approximate footprint dimensions from area (assume ~1:1.3 aspect ratio)
+  const ftW = Math.round(Math.sqrt(area / 1.3));
+  const ftH = Math.round(area / ftW);
+  document.getElementById('planDims').textContent = ftW + " × " + ftH + " ft (approx.)";
+
+  const ox = PAD, oy = PAD*0.9;
+  const livingH = plotH * 0.36;
+  const bedH = plotH - livingH;
+  const cols = Math.ceil(Math.sqrt(bhk));
+  const rows = Math.ceil(bhk / cols);
+  const cellW = plotW / cols;
+  const cellH = bedH / rows;
+
+  let svgParts = [];
+
+  // outer plot outline
+  svgParts.push(`<rect x="${ox}" y="${oy}" width="${plotW}" height="${plotH}" fill="none" stroke="var(--teal)" stroke-width="1.5"/>`);
+
+  // living/kitchen strip
+  svgParts.push(`<rect x="${ox}" y="${oy}" width="${plotW}" height="${livingH}" fill="rgba(200,155,60,0.10)" stroke="var(--grid-line-strong)"/>`);
+  svgParts.push(`<text x="${ox+plotW/2}" y="${oy+livingH/2+4}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="#C7D6E0">LIVING / KITCHEN</text>`);
+
+  // bedrooms grid
+  let count = 0;
+  for(let r=0; r<rows; r++){
+    for(let c=0; c<cols; c++){
+      if(count >= bhk) break;
+      const x = ox + c*cellW;
+      const y = oy + livingH + r*cellH;
+      svgParts.push(`<rect x="${x}" y="${y}" width="${cellW}" height="${cellH}" fill="rgba(87,163,153,0.08)" stroke="var(--grid-line-strong)"/>`);
+      svgParts.push(`<text x="${x+cellW/2}" y="${y+cellH/2+4}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="#C7D6E0">BED ${count+1}</text>`);
+      count++;
+    }
+  }
+
+  // dimension ticks (top + left), architectural style
+  svgParts.push(`<line x1="${ox}" y1="${oy-14}" x2="${ox+plotW}" y2="${oy-14}" stroke="#5C7488" stroke-width="1"/>`);
+  svgParts.push(`<line x1="${ox}" y1="${oy-18}" x2="${ox}" y2="${oy-10}" stroke="#5C7488" stroke-width="1"/>`);
+  svgParts.push(`<line x1="${ox+plotW}" y1="${oy-18}" x2="${ox+plotW}" y2="${oy-10}" stroke="#5C7488" stroke-width="1"/>`);
+  svgParts.push(`<text x="${ox+plotW/2}" y="${oy-20}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#5C7488">${ftW}'</text>`);
+
+  svgParts.push(`<line x1="${ox-14}" y1="${oy}" x2="${ox-14}" y2="${oy+plotH}" stroke="#5C7488" stroke-width="1"/>`);
+  svgParts.push(`<text x="${ox-20}" y="${oy+plotH/2}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#5C7488" transform="rotate(-90 ${ox-20} ${oy+plotH/2})">${ftH}'</text>`);
+
+  svg.innerHTML = svgParts.join("");
+}
+
+// ---------- Comparison bar chart ----------
+function drawBars(){
+  const barsEl = document.getElementById('bars');
+  const labelsEl = document.getElementById('barLabels');
+  const sorted = [...LOCALITIES].sort((a,b) => b.rate - a.rate);
+  const max = sorted[0].rate;
+
+  barsEl.innerHTML = "";
+  labelsEl.innerHTML = "";
+
+  sorted.forEach(l => {
+    const pct = Math.max(6, (l.rate / max) * 100);
+    const isSelected = l.name === state.locality;
+
+    const col = document.createElement('div');
+    col.className = 'bar-col' + (isSelected ? ' selected' : '');
+    col.innerHTML = `<span class="bar-val">₹${commas(l.rate)}</span><div class="bar" style="height:${pct}%"></div>`;
+    barsEl.appendChild(col);
+
+    const lab = document.createElement('div');
+    lab.className = 'bar-label' + (isSelected ? ' selected' : '');
+    lab.textContent = l.name;
+    labelsEl.appendChild(lab);
+  });
+}
+
+// ---------- Render ----------
+function render(){
+  const { bhk, area, locality } = state;
+  const result = predict(bhk, area, locality);
+
+  document.getElementById('certId').textContent = "BLR-" + String(Math.round(area) + bhk*7).padStart(4,'0');
+  document.getElementById('certValue').textContent = formatINR(result.estimate);
+  document.getElementById('certRange').textContent =
+    "Likely range: " + formatINR(result.low) + " – " + formatINR(result.high);
+  document.getElementById('certRate').textContent = "₹" + commas(result.ratePerSqft) + " /sq.ft";
+  document.getElementById('certConfig').textContent = (bhk === 5 ? "5+" : bhk) + " BHK · " + commas(area) + " sq.ft";
+  document.getElementById('certLocality').textContent = locality;
+
+  const loc = getLocality(locality);
+  document.getElementById('localityTag').innerHTML =
+    loc.zone + " Bengaluru &nbsp;·&nbsp; benchmark rate <b>₹" + commas(loc.rate) + "/sq.ft</b>";
+
+  drawFloorplan(bhk, area);
+  drawBars();
+}
+
+// ---------- Events ----------
+document.getElementById('bhkRow').addEventListener('click', (e) => {
+  const btn = e.target.closest('.bhk-btn');
+  if (!btn) return;
+  document.querySelectorAll('.bhk-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  state.bhk = Number(btn.dataset.bhk);
+  render();
+});
+
+const areaSlider = document.getElementById('areaSlider');
+const areaNumber = document.getElementById('areaNumber');
+areaSlider.addEventListener('input', () => {
+  state.area = Number(areaSlider.value);
+  areaNumber.value = state.area;
+  render();
+});
+areaNumber.addEventListener('input', () => {
+  let v = Number(areaNumber.value);
+  if (isNaN(v)) return;
+  v = Math.min(5000, Math.max(300, v));
+  state.area = v;
+  areaSlider.value = v;
+  render();
+});
+
+select.addEventListener('change', () => {
+  state.locality = select.value;
+  render();
+});
+
+render();
+</script>
+</body>
+</html>
